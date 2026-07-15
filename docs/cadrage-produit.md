@@ -11,8 +11,7 @@ Ce produit est le **« deuxième outil »** déjà annoncé sur le site d'iralin
 ### Contexte iralink Agency (confirmé via le site)
 
 - **DIPpro** (produit existant, 850 €/mois + 1 350 € d'installation) : automatise la conformité au **DIP (Document d'Information Précontractuel)**, obligation légale de la **Loi Doubin** pour les réseaux de franchise en France. Surveillance hebdomadaire des obligations légales, mise à jour assistée par IA (Claude API), distribution certifiée par email aux franchisés, audit trail horodaté à valeur légale.
-- iralink utilise déjà **n8n et Make** pour l'orchestration de workflows — un point d'ancrage naturel pour toute intégration entre les deux produits.
-- Le nouveau CRM et DIPpro font partie du **même écosystème produit iralink**, mais sont **fonctionnellement distincts** : DIPpro reste le moteur de conformité légale (DIP), le nouveau CRM couvre **tout ce qui relève de la gestion de la franchise** — recrutement, suivi de la relation, contrats, cycle de vie — sans dupliquer le moteur de conformité de DIPpro. Une intégration (partage de données sur le franchisé, éventuellement via n8n) est envisageable mais reste à concevoir ; ce n'est pas une orchestration de DIPpro par le CRM.
+- Le nouveau CRM et DIPpro font partie du **même écosystème produit iralink**, mais sont **fonctionnellement distincts** : DIPpro reste le moteur de conformité légale (DIP), le nouveau CRM couvre **tout ce qui relève de la gestion de la franchise** — recrutement, suivi de la relation, contrats, cycle de vie — sans dupliquer le moteur de conformité de DIPpro. Une intégration (partage de données sur le franchisé) est envisageable mais reste à concevoir : **iralink n'utilise plus n8n ni Make**, donc le mécanisme technique (API directe entre les deux apps ? webhooks ?) reste à définir plus tard.
 
 Positionnement prix : DIPpro (compliance légale, risque juridique élevé, tarif premium B2B) vs. nouveau CRM (gestion relationnelle, risque faible, volume plus large de franchiseurs) → un tarif d'entrée ~15 €/mois est cohérent avec ce moindre risque et ce périmètre plus resserré.
 
@@ -26,7 +25,7 @@ Positionnement prix : DIPpro (compliance légale, risque juridique élevé, tari
 
 1. **Auth & organisations** — un compte = une organisation (le franchiseur), multi-utilisateurs (équipe du franchiseur) avec rôles simples (admin / membre).
 2. **Fiche franchisé (CRM core)** — pipeline par statut (ex : Lead → Qualifié → Dossier envoyé → Contrat en signature → Signé/Actif → Résilié), infos de contact, notes, historique d'activité, tags/zone géographique.
-3. **Gestion du dossier franchisé** — centralisation des documents/infos liés au recrutement et au suivi (indépendant de DIPpro ; un lien/référence vers le dossier DIP du franchisé dans DIPpro peut être ajouté manuellement en V1, synchro automatique en V2 si l'intégration n8n est conçue).
+3. **Gestion du dossier franchisé** — centralisation des documents/infos liés au recrutement et au suivi (indépendant de DIPpro ; un lien/référence vers le dossier DIP du franchisé dans DIPpro peut être ajouté manuellement en V1, synchro automatique envisageable en V2 selon le mécanisme d'intégration retenu).
 4. **Signature électronique de contrats** — génération du contrat de franchise (à partir d'un modèle) et envoi en signature via **Yousign** (ou DocuSign), suivi du statut de signature directement sur la fiche franchisé.
 5. **Facturation SaaS** — abonnement Stripe à ~15 €/mois, essai gratuit, page d'upgrade/downgrade simple.
 6. **Tableau de bord** — vue d'ensemble du réseau : nombre de franchisés par statut, contrats en attente de signature, activité récente.
@@ -53,8 +52,7 @@ Isolation multi-tenant par `organization_id` (Row Level Security Supabase).
 
 | Intégration | Usage | Statut |
 |---|---|---|
-| **DIPpro** | Écosystème partagé — passerelle de données à concevoir (probablement via n8n, déjà utilisé par iralink), hors périmètre strict du MVP | Non bloquant pour le MVP — à cadrer en V2 |
-| **n8n** | Orchestration de workflows, potentiellement le pont technique entre le CRM et DIPpro | Connecteur n8n disponible dans cette session, à explorer |
+| **DIPpro** | Écosystème partagé — passerelle de données à concevoir (mécanisme technique non encore choisi : API directe, webhooks...), hors périmètre strict du MVP | Non bloquant pour le MVP — à cadrer en V2 |
 | **Yousign** (ou DocuSign) | Signature électronique des contrats de franchise | Choisi — intégration via leur API, webhook de statut de signature |
 | **Stripe** | Abonnement 15 €/mois | Connecteur Stripe présent dans cette session mais nécessite autorisation OAuth côté utilisateur avant utilisation |
 | **Supabase** | Base de données + auth + RLS multi-tenant | Connecteur disponible dans cette session |
@@ -76,11 +74,11 @@ Isolation multi-tenant par `organization_id` (Row Level Security Supabase).
 - **Phase 3** : facturation Stripe + onboarding self-serve.
 - **Phase 4** : durcissement (tests, sécurité, RGPD — données de contrats/signatures) + beta avec 1-2 franchiseurs pilotes.
 - **Phase 5 (Q4 2026)** : publication.
-- **Phase 6 (V2, hors cible Q4 2026)** : passerelle de données avec DIPpro via n8n, portail self-service franchisés.
+- **Phase 6 (V2, hors cible Q4 2026)** : passerelle de données avec DIPpro (mécanisme à définir), portail self-service franchisés.
 
 ## 8. Points à trancher avant de coder
 
-1. **Intégration DIPpro** : dans quelle mesure faut-il la prévoir dès le MVP (même a minima, ex. champ de référence croisée) ou la repousser entièrement en V2 ? Si prévue, passera-t-elle par n8n ?
+1. **Intégration DIPpro** : dans quelle mesure faut-il la prévoir dès le MVP (même a minima, ex. champ de référence croisée) ou la repousser entièrement en V2 ? iralink n'utilisant plus n8n ni Make, le mécanisme technique (API directe entre les deux apps, webhooks, autre) reste à définir.
 2. **Génération de contrats** : modèle de contrat de franchise unique par franchiseur, ou plusieurs modèles/variables (zone, droit d'entrée, royalties) ?
 3. **RGPD** : les franchisés sont des personnes physiques → politique de conservation des données, consentement pour la signature électronique.
 4. **Nom du produit** — pistes à discuter (à ne pas confondre avec DIPpro, déjà pris) :
