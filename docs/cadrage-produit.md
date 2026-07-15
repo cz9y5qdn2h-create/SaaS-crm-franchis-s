@@ -4,11 +4,17 @@
 
 ## 1. Pitch
 
-Un CRM léger et abordable (~15 €/mois) dédié à la gestion des **réseaux de franchisés** : centraliser les candidats franchisés, faire signer électroniquement les contrats, suivre le cycle de vie de chaque franchisé, et récupérer automatiquement les leads/contacts depuis **DipPro** (la plateforme utilisée par iralink Agency — `iralink-agency.dippro.business`).
+Un CRM léger et abordable (~15 €/mois) dédié à la **gestion des réseaux de franchisés** dans son ensemble : recrutement/pipeline de candidats, dossiers, signature électronique des contrats de franchise, suivi du cycle de vie de chaque franchisé.
 
-Positionnement : moins cher qu'un CRM généraliste (HubSpot, etc.) car le périmètre est volontairement restreint à un métier précis (gestion de franchise), donc moins de risque produit et un coût d'infra/dev plus faible → prix bas défendable.
+Ce produit est le **« deuxième outil »** déjà annoncé sur le site d'iralink Agency pour Q4 2026 (source : `www.iralink-agency.com`, consulté le 15/07/2026) — il vient compléter **DIPpro**, le produit phare actuel d'iralink.
 
-**⚠️ Point à confirmer** : je n'ai pas pu récupérer le contenu de `iralink-agency.dippro.business` (limite d'accès web atteinte cette session). Je pars du principe que DipPro est la plateforme d'agence (type marque blanche CRM/marketing automation) qu'utilise iralink pour gérer ses propres clients/leads, et que ce nouveau SaaS doit en importer les contacts (candidats franchisés). À confirmer, et idéalement fournir : accès à la doc API DipPro (si elle existe), ou des identifiants API de test.
+### Contexte iralink Agency (confirmé via le site)
+
+- **DIPpro** (produit existant, 850 €/mois + 1 350 € d'installation) : automatise la conformité au **DIP (Document d'Information Précontractuel)**, obligation légale de la **Loi Doubin** pour les réseaux de franchise en France. Surveillance hebdomadaire des obligations légales, mise à jour assistée par IA (Claude API), distribution certifiée par email aux franchisés, audit trail horodaté à valeur légale.
+- iralink utilise déjà **n8n et Make** pour l'orchestration de workflows — un point d'ancrage naturel pour toute intégration entre les deux produits.
+- Le nouveau CRM et DIPpro font partie du **même écosystème produit iralink**, mais sont **fonctionnellement distincts** : DIPpro reste le moteur de conformité légale (DIP), le nouveau CRM couvre **tout ce qui relève de la gestion de la franchise** — recrutement, suivi de la relation, contrats, cycle de vie — sans dupliquer le moteur de conformité de DIPpro. Une intégration (partage de données sur le franchisé, éventuellement via n8n) est envisageable mais reste à concevoir ; ce n'est pas une orchestration de DIPpro par le CRM.
+
+Positionnement prix : DIPpro (compliance légale, risque juridique élevé, tarif premium B2B) vs. nouveau CRM (gestion relationnelle, risque faible, volume plus large de franchiseurs) → un tarif d'entrée ~15 €/mois est cohérent avec ce moindre risque et ce périmètre plus resserré.
 
 ## 2. Cible & modèle économique
 
@@ -20,8 +26,8 @@ Positionnement : moins cher qu'un CRM généraliste (HubSpot, etc.) car le péri
 
 1. **Auth & organisations** — un compte = une organisation (le franchiseur), multi-utilisateurs (équipe du franchiseur) avec rôles simples (admin / membre).
 2. **Fiche franchisé (CRM core)** — pipeline par statut (ex : Lead → Qualifié → Dossier envoyé → Contrat en signature → Signé/Actif → Résilié), infos de contact, notes, historique d'activité, tags/zone géographique.
-3. **Import DipPro** — synchronisation des contacts/leads DipPro vers le pipeline (via API si dispo, sinon webhook DipPro → endpoint interne, sinon import CSV en secours pour le MVP).
-4. **Signature électronique de contrats** — génération du contrat (à partir d'un modèle) et envoi en signature via **Yousign** (ou DocuSign), suivi du statut de signature directement sur la fiche franchisé.
+3. **Gestion du dossier franchisé** — centralisation des documents/infos liés au recrutement et au suivi (indépendant de DIPpro ; un lien/référence vers le dossier DIP du franchisé dans DIPpro peut être ajouté manuellement en V1, synchro automatique en V2 si l'intégration n8n est conçue).
+4. **Signature électronique de contrats** — génération du contrat de franchise (à partir d'un modèle) et envoi en signature via **Yousign** (ou DocuSign), suivi du statut de signature directement sur la fiche franchisé.
 5. **Facturation SaaS** — abonnement Stripe à ~15 €/mois, essai gratuit, page d'upgrade/downgrade simple.
 6. **Tableau de bord** — vue d'ensemble du réseau : nombre de franchisés par statut, contrats en attente de signature, activité récente.
 
@@ -36,10 +42,9 @@ Positionnement : moins cher qu'un CRM généraliste (HubSpot, etc.) car le péri
 
 - `organizations` (le franchiseur, tenant)
 - `users` (membres d'une organisation, rôle)
-- `franchisees` (candidat/franchisé : identité, statut pipeline, source = DipPro ou manuel, organization_id)
+- `franchisees` (candidat/franchisé : identité, statut pipeline, référence DIPpro optionnelle, organization_id)
 - `franchisee_activities` (notes, changements de statut, timeline)
 - `contracts` (lié à un franchisee, statut de signature, provider = yousign/docusign, external_id)
-- `dippro_sync_log` (traçabilité des imports/synchros)
 - `subscriptions` (lien Stripe : plan, statut, organization_id)
 
 Isolation multi-tenant par `organization_id` (Row Level Security Supabase).
@@ -48,7 +53,8 @@ Isolation multi-tenant par `organization_id` (Row Level Security Supabase).
 
 | Intégration | Usage | Statut |
 |---|---|---|
-| **DipPro** | Import des franchisés/leads | À investiguer — besoin de la doc API ou d'un accès pour valider faisabilité (API REST ? webhooks ? export seul ?) |
+| **DIPpro** | Écosystème partagé — passerelle de données à concevoir (probablement via n8n, déjà utilisé par iralink), hors périmètre strict du MVP | Non bloquant pour le MVP — à cadrer en V2 |
+| **n8n** | Orchestration de workflows, potentiellement le pont technique entre le CRM et DIPpro | Connecteur n8n disponible dans cette session, à explorer |
 | **Yousign** (ou DocuSign) | Signature électronique des contrats de franchise | Choisi — intégration via leur API, webhook de statut de signature |
 | **Stripe** | Abonnement 15 €/mois | Connecteur Stripe présent dans cette session mais nécessite autorisation OAuth côté utilisateur avant utilisation |
 | **Supabase** | Base de données + auth + RLS multi-tenant | Connecteur disponible dans cette session |
@@ -66,24 +72,24 @@ Isolation multi-tenant par `organization_id` (Row Level Security Supabase).
 
 - **Phase 0 (maintenant)** : valider ce cadrage, trancher les points ouverts (§8), choisir un nom.
 - **Phase 1** : socle technique (auth, multi-tenant, modèle de données, CRUD franchisés).
-- **Phase 2** : intégration DipPro (selon ce qu'on découvre de son API).
-- **Phase 3** : signature électronique (Yousign) + génération de contrat depuis modèle.
-- **Phase 4** : facturation Stripe + onboarding self-serve.
-- **Phase 5** : durcissement (tests, sécurité, RGPD — données de contrats/signatures) + beta avec 1-2 franchiseurs pilotes.
-- **Phase 6 (Q4 2026)** : publication.
+- **Phase 2** : signature électronique (Yousign) + génération de contrat depuis modèle.
+- **Phase 3** : facturation Stripe + onboarding self-serve.
+- **Phase 4** : durcissement (tests, sécurité, RGPD — données de contrats/signatures) + beta avec 1-2 franchiseurs pilotes.
+- **Phase 5 (Q4 2026)** : publication.
+- **Phase 6 (V2, hors cible Q4 2026)** : passerelle de données avec DIPpro via n8n, portail self-service franchisés.
 
 ## 8. Points à trancher avant de coder
 
-1. **DipPro** : quelle intégration est réellement possible (API publique, webhooks, export CSV uniquement) ? → nécessite doc API ou accès test.
-2. **Génération de contrats** : modèle de contrat unique par franchiseur, ou plusieurs modèles/variables (zone, droit d'entrée, royalties) ?
+1. **Intégration DIPpro** : dans quelle mesure faut-il la prévoir dès le MVP (même a minima, ex. champ de référence croisée) ou la repousser entièrement en V2 ? Si prévue, passera-t-elle par n8n ?
+2. **Génération de contrats** : modèle de contrat de franchise unique par franchiseur, ou plusieurs modèles/variables (zone, droit d'entrée, royalties) ?
 3. **RGPD** : les franchisés sont des personnes physiques → politique de conservation des données, consentement pour la signature électronique.
-4. **Nom du produit** — pistes à discuter :
+4. **Nom du produit** — pistes à discuter (à ne pas confondre avec DIPpro, déjà pris) :
    - FranchHub
    - Francizy
-   - iralink Franchise (cohérent avec la marque existante)
+   - iralink Franchise (cohérent avec la marque existante et le positionnement « deuxième outil »)
    - SignFranchise
    - FranchiseOS
-   - DipFranchise (clin d'œil à DipPro comme source de leads)
+   - Doubin'App (clin d'œil à la Loi Doubin, à double tranchant si trop proche du terrain légal de DIPpro)
 
 ## 9. Prochaine étape proposée
 
