@@ -1,8 +1,10 @@
-# Cadrage produit — CRM Franchisés (écosystème iralink Agency)
+# Cadrage produit — Essaimo (CRM Franchisés, écosystème iralink Agency)
 
 > Document de brainstorm / cadrage avant développement. À valider/amender avant de lancer le build.
 
 ## 1. Pitch
+
+**Essaimo** — nom choisi le 16/07/2026, du verbe "essaimer" (dupliquer une activité à partir d'une marque mère), qui décrit littéralement le mécanisme de la franchise. Domaines `essaimo.com` et `essaimo.fr` vérifiés libres au moment du choix (à réserver rapidement avant qu'ils ne le soient plus — la vérification de disponibilité n'est pas une réservation).
 
 Un CRM léger et abordable (~15 €/mois) dédié à la **gestion des réseaux de franchisés** dans son ensemble : recrutement/pipeline de candidats, dossiers, signature électronique des contrats de franchise, suivi du cycle de vie de chaque franchisé.
 
@@ -11,9 +13,9 @@ Ce produit est le **« deuxième outil »** déjà annoncé sur le site d'iralin
 ### Contexte iralink Agency (confirmé via le site)
 
 - **DIPpro** (produit existant, 850 €/mois + 1 350 € d'installation) : automatise la conformité au **DIP (Document d'Information Précontractuel)**, obligation légale de la **Loi Doubin** pour les réseaux de franchise en France. Surveillance hebdomadaire des obligations légales, mise à jour assistée par IA (Claude API), distribution certifiée par email aux franchisés, audit trail horodaté à valeur légale.
-- Le nouveau CRM et DIPpro font partie du **même écosystème produit iralink**, mais sont **fonctionnellement distincts** : DIPpro reste le moteur de conformité légale (DIP), le nouveau CRM couvre **tout ce qui relève de la gestion de la franchise** — recrutement, suivi de la relation, contrats, cycle de vie — sans dupliquer le moteur de conformité de DIPpro. Une intégration (partage de données sur le franchisé) est envisageable mais reste à concevoir : **iralink n'utilise plus n8n ni Make**, donc le mécanisme technique (API directe entre les deux apps ? webhooks ?) reste à définir plus tard.
+- Essaimo et DIPpro font partie du **même écosystème produit iralink**, mais sont **fonctionnellement distincts** : DIPpro reste le moteur de conformité légale (DIP), Essaimo couvre **tout ce qui relève de la gestion de la franchise** — recrutement, suivi de la relation, contrats, cycle de vie — sans dupliquer le moteur de conformité de DIPpro. Une intégration (partage de données sur le franchisé) est envisageable mais reste à concevoir : **iralink n'utilise plus n8n ni Make**, donc le mécanisme technique (API directe entre les deux apps ? webhooks ?) reste à définir plus tard.
 
-Positionnement prix : DIPpro (compliance légale, risque juridique élevé, tarif premium B2B) vs. nouveau CRM (gestion relationnelle, risque faible, volume plus large de franchiseurs) → un tarif d'entrée ~15 €/mois est cohérent avec ce moindre risque et ce périmètre plus resserré.
+Positionnement prix : DIPpro (compliance légale, risque juridique élevé, tarif premium B2B) vs. Essaimo (gestion relationnelle, risque faible, volume plus large de franchiseurs) → un tarif d'entrée ~15 €/mois est cohérent avec ce moindre risque et ce périmètre plus resserré.
 
 ## 2. Cible & modèle économique
 
@@ -81,14 +83,9 @@ Isolation multi-tenant par `organization_id` (Row Level Security Supabase).
 1. **Intégration DIPpro** : dans quelle mesure faut-il la prévoir dès le MVP (même a minima, ex. champ de référence croisée) ou la repousser entièrement en V2 ? iralink n'utilisant plus n8n ni Make, le mécanisme technique (API directe entre les deux apps, webhooks, autre) reste à définir.
 2. **Génération de contrats** : modèle de contrat de franchise unique par franchiseur, ou plusieurs modèles/variables (zone, droit d'entrée, royalties) ?
 3. **RGPD** : les franchisés sont des personnes physiques → politique de conservation des données, consentement pour la signature électronique.
-4. **Nom du produit** — pistes à discuter (à ne pas confondre avec DIPpro, déjà pris) :
-   - FranchHub
-   - Francizy
-   - iralink Franchise (cohérent avec la marque existante et le positionnement « deuxième outil »)
-   - SignFranchise
-   - FranchiseOS
-   - Doubin'App (clin d'œil à la Loi Doubin, à double tranchant si trop proche du terrain légal de DIPpro)
+4. ~~Nom du produit~~ **Tranché : Essaimo.**
 
 ## 9. Prochaine étape proposée
 
-Une fois ce document validé/amendé, on pourra initialiser le projet (Next.js + Supabase) et démarrer par le socle multi-tenant + CRUD franchisés (Phase 1).
+- Réserver `essaimo.com` et `essaimo.fr` (et idéalement une marque INPI) avant de communiquer publiquement sur le nom.
+- Une fois cela fait, initialiser le projet (Next.js + Supabase) et démarrer par le socle multi-tenant + CRUD franchisés (Phase 1).
