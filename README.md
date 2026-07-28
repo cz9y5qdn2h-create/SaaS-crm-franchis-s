@@ -26,3 +26,18 @@ Ouvrir [http://localhost:3000](http://localhost:3000) — tu seras redirigé ver
 - CRUD franchisés : liste, création, fiche détail avec suivi de statut (pipeline) et notes.
 
 Ce qui reste à faire est décrit dans la roadmap du document de cadrage (signature électronique, facturation Stripe, intégration DIPpro).
+
+## Générer des visuels de marque (logo, landing page)
+
+Script réutilisable qui appelle directement l'API Claude (Claude Opus 5) pour générer des concepts de logo (SVG) et une maquette de landing page (HTML) pour Essaimo.
+
+1. Définir la clé API : `export ANTHROPIC_API_KEY=sk-ant-...` (ou `node --env-file=.env.local scripts/generate-visuals.mjs` si elle est dans `.env.local`).
+2. Lancer :
+
+```bash
+npm run visuals          # génère logos + landing page
+npm run visuals logo     # logos uniquement
+npm run visuals landing  # landing page uniquement
+```
+
+Les fichiers sont écrits dans `design-output/` (`logo-concept-*.svg`, `logos-raw.md`, `landing-page.html`). Le brief de marque (positionnement, ton, palette) est modifiable directement dans `scripts/generate-visuals.mjs`.
